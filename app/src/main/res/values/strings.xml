@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Home Z3</string>
+    <string name="short_label">Open main door</string>
+    <string name="long_label">Open the main door</string>
+</resources>
