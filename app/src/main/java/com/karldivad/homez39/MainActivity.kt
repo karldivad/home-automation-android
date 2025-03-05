@@ -31,7 +31,11 @@ import okhttp3.Request
 import kotlin.concurrent.thread
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
-import android.net.Uri
+import androidx.compose.ui.res.stringResource
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.graphics.drawable.IconCompat
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharedPreferences: SharedPreferences
@@ -42,13 +46,7 @@ class MainActivity : ComponentActivity() {
 
         val appLinkIntent: Intent = intent
         val appLinkAction: String? = appLinkIntent.action
-        var triggerDoor = appLinkAction?.contains("OPEN_APP_FEATURE") == true
-
-        intent?.data?.let { uri ->
-            if (uri.host == "openMainDoor") {
-                triggerDoor = true;
-            }
-        }
+        val triggerDoor = appLinkAction?.contains("actions.intent.OPEN_APP_FEATURE") == true
 
         setContent {
             MyApp(sharedPreferences, triggerDoor)
@@ -59,9 +57,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp(sharedPreferences: SharedPreferences, triggerDoor: Boolean) {
+    val context = LocalContext.current
     var url by remember { mutableStateOf(sharedPreferences.getString("saved_url", "") ?: "") }
     var response by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
+    var showShortcutDialog by remember { mutableStateOf(false) }
     var triggerClick by remember { mutableStateOf(false) }
 
     LaunchedEffect(triggerDoor) {
@@ -117,7 +117,15 @@ fun MyApp(sharedPreferences: SharedPreferences, triggerDoor: Boolean) {
                 containerColor = Color(0xFF000000),
                 contentColor = Color.Black,
             ), modifier = Modifier.padding(16.dp)) {
-                Text("Editar")
+                Text("      ")
+            }
+        }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
+            Button(onClick = { showShortcutDialog = true }, colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF000000),
+                contentColor = Color.White,
+            ), modifier = Modifier.padding(16.dp)) {
+                Text("      ")
             }
         }
     }
@@ -125,12 +133,12 @@ fun MyApp(sharedPreferences: SharedPreferences, triggerDoor: Boolean) {
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Editar URL") },
+            title = { Text(stringResource(R.string.edit_url)) },
             text = {
                 OutlinedTextField(
                     value = url,
                     onValueChange = { url = it },
-                    label = { Text("Ingresar URL") },
+                    label = { Text(stringResource(R.string.enter_url)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             },
@@ -139,16 +147,55 @@ fun MyApp(sharedPreferences: SharedPreferences, triggerDoor: Boolean) {
                     sharedPreferences.edit().putString("saved_url", url).apply()
                     showDialog = false
                 }) {
-                    Text("Grabar")
+                    Text(stringResource(R.string.save)
+                    )
                 }
             },
             dismissButton = {
                 Button(onClick = { showDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
     }
+
+    if (showShortcutDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Add Shortcut") },
+            text = { Text("Do you want to add this shortcut?") },
+            confirmButton = {
+                Button(onClick = {
+                    createDynamicShortcut(context)
+                    showShortcutDialog = false // Close dialog after action
+                }) {
+                    Text("Add Shortcut")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+fun createDynamicShortcut(context: Context) {
+
+    val shortcut = ShortcutInfoCompat.Builder(context, "OPEN_DOOR")
+        .setShortLabel(context.getString(R.string.short_label))
+        .setLongLabel(context.getString(R.string.long_label))
+        .setIcon(IconCompat.createWithResource(context, R.drawable.ic_door))
+        .addCapabilityBinding("actions.intent.OPEN_APP_FEATURE")
+        .setIsConversation()
+        .setIntent(Intent(context, MainActivity::class.java).apply {
+            action = "actions.intent.OPEN_APP_FEATURE"
+        })
+        .setRank(0)
+        .build()
+
+    ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
 }
 
 fun makeGetRequest(url: String, onResult: (String) -> Unit) {
@@ -158,7 +205,7 @@ fun makeGetRequest(url: String, onResult: (String) -> Unit) {
             val request = Request.Builder().url(url).build()
             val response = client.newCall(request).execute()
             val responseBody = response.body?.string() ?: "No response"
-            println("Response: ${responseBody}")
+            println("Response: $responseBody")
             onResult(responseBody)
         } catch (e: Exception) {
             println("Error: ${e.message}")
@@ -217,7 +264,7 @@ fun OpenButton(url: String, onResult: (String) -> Unit, triggerClick: Boolean, o
             if (!enabled) {
                 Icon(
                     imageVector = Icons.Default.Build,
-                    contentDescription = "Wait",
+                    contentDescription = stringResource(R.string.wait_5s),
                     modifier = Modifier.size(18.dp).graphicsLayer {
                         alpha = if (enabled) 1f else 0.5f
                         rotationZ = if (enabled) 0f else -2f
@@ -225,7 +272,7 @@ fun OpenButton(url: String, onResult: (String) -> Unit, triggerClick: Boolean, o
                 )
                 Spacer(Modifier.width(8.dp))
             }
-            Text(if (enabled) "Abrir puerta" else "Espera 5s")
+            Text(if (enabled) stringResource(R.string.open_door) else stringResource(R.string.wait_5s))
         }
     }
 }

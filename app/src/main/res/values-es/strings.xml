@@ -3,4 +3,11 @@
     <string name="app_name">Casa Z3</string>
     <string name="short_label">Abrir la reja</string>
     <string name="long_label">Abrir la reja negra</string>
+    <string name="open_door">Abrir puerta</string>
+    <string name="wait_5s">Espera 5s</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+    <string name="enter_url">Ingresar URL</string>
+    <string name="edit_url">Editar URL</string>
+    <string name="open_door_command">abrirLaReja</string>
 </resources>

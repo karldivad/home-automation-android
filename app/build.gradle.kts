@@ -12,8 +12,8 @@ android {
         applicationId = "com.karldivad.homez39"
         minSdk = 25
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 11
+        versionName = "2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

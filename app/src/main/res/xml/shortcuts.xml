@@ -19,7 +19,7 @@
         </intent>
         <categories android:name="android.shortcut.conversation" />
         <capability-binding android:key="actions.intent.OPEN_APP_FEATURE">
-            <parameter-binding android:key="open.door" android:value="openMainDoor"/>
+            <parameter-binding android:key="open.door" android:value="@string/open_door_command"/>
         </capability-binding>
     </shortcut>
 </shortcuts>

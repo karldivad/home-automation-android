@@ -2,4 +2,11 @@
     <string name="app_name">Home Z3</string>
     <string name="short_label">Open main door</string>
     <string name="long_label">Open the main door</string>
+    <string name="open_door">Open door</string>
+    <string name="wait_5s">Wait 5s</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="enter_url">Enter URL</string>
+    <string name="edit_url">Edit URL</string>
+    <string name="open_door_command">openMainDoor</string>
 </resources>
